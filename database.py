@@ -26,8 +26,8 @@ def get_user_data(user_id):
         'last_asked_question': None,
         'score': 0
     }
-    user_data = json.loads(r.get(user_id)) if r.get(user_id) else default_user_data
-    return user_data
+    user_data = r.get(user_id)
+    return json.loads(user_data) if user_data else default_user_data
 
 
 def update_current_question(user_id, question_id):
