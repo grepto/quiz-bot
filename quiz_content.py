@@ -3,16 +3,13 @@ from random import randrange
 import re
 import logging
 
-QUESTION_ROW_OFFSET = 1
-ANSWER_ROW_OFFSET = 2
 QUIZ_FILES_PATH = 'quiz/'
-
 
 logger = logging.getLogger('quiz')
 
 
 def get_clean_answer(answer):
-    characters_to_replace = ['"', ',', '-', '\'', '\n', ':']
+    characters_to_replace = ['"', ',', '-', '\'', '\n', ':', '.']
     answer = str(answer)
     answer = answer.lower()
     for character in characters_to_replace:
@@ -25,17 +22,21 @@ def get_quiz_content_from_file(quiz_file_path):
     with open(quiz_file_path, 'r', encoding='KOI8-R') as quiz_file:
         file_content = [row.strip() for row in quiz_file]
     quiz_content = []
-    for row_index in range(len(file_content)):
-        if file_content[row_index].split(' ')[0] == 'Вопрос':
-            question_row_index = row_index + QUESTION_ROW_OFFSET
+    file_iterator = iter(file_content)
+    while True:
+        try:
+            row = next(file_iterator)
+        except StopIteration:
+            break
+        if row.split(' ')[0] == 'Вопрос':
             question = ''
-            while file_content[question_row_index] != '':
-                question += file_content[question_row_index] + ' '
-                question_row_index += 1
-            answer = file_content[question_row_index + ANSWER_ROW_OFFSET]
-            answer = re.split('[.(]+', answer)[0]
-            answer = get_clean_answer(answer)
-            quiz_content.append((question.strip(), answer.replace('"', '')))
+            row = next(file_iterator)
+            while row:
+                question += row
+                row = next(file_iterator)
+            next(file_iterator)
+            answer = next(file_iterator)
+            quiz_content.append((question, get_clean_answer(answer)))
     return quiz_content
 
 
@@ -59,8 +60,7 @@ def is_answer_correct(quiz_content, question_id, answer):
 
 
 def main():
-    quiz_content = get_quiz_content()
-    print(get_random_question(quiz_content))
+    pass
 
 
 if __name__ == '__main__':
