@@ -18,31 +18,34 @@ def get_clean_answer(answer):
     return answer.strip()
 
 
-def get_quiz_content_from_file(quiz_file_path):
-    with open(quiz_file_path, 'r', encoding='KOI8-R') as quiz_file:
-        file_content = [row.strip() for row in quiz_file]
+def prepare_quiz(quiz_raw_data):
     quiz_content = []
-    file_iterator = iter(file_content)
+    quiz_raw_data_iter = iter(quiz_raw_data)
     while True:
         try:
-            row = next(file_iterator)
+            row = next(quiz_raw_data_iter)
         except StopIteration:
             break
         if row.split(' ')[0] == 'Вопрос':
             question = ''
-            row = next(file_iterator)
+            row = next(quiz_raw_data_iter)
             while row:
                 question += row
-                row = next(file_iterator)
-            next(file_iterator)
-            answer = next(file_iterator)
+                row = next(quiz_raw_data_iter)
+            next(quiz_raw_data_iter)
+            answer = next(quiz_raw_data_iter)
             quiz_content.append((question, get_clean_answer(answer)))
     return quiz_content
 
 
 def get_quiz_content():
     files = [file for file in glob.glob(QUIZ_FILES_PATH + '**/*.txt', recursive=True)]
-    return [quiz_content for file in files for quiz_content in get_quiz_content_from_file(file)]
+    quiz_content = []
+    for file in files:
+        with open(file, 'r', encoding='KOI8-R') as quiz_file:
+            file_content = [row.strip() for row in quiz_file]
+        quiz_content.extend(prepare_quiz(file_content))
+    return quiz_content
 
 
 def get_random_question(quiz_content):
@@ -60,7 +63,7 @@ def is_answer_correct(quiz_content, question_id, answer):
 
 
 def main():
-    pass
+    print(prepare_quiz([]))
 
 
 if __name__ == '__main__':
